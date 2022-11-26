@@ -1,5 +1,3 @@
-# JOJO-stand-ablitity
-
 # What is this?
 
 This is an analysis toward JoJo's Bizarre Adventure.
