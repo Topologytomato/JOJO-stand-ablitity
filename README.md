@@ -1,6 +1,6 @@
 # What is this?
 
-This is an analysis toward JoJo's Bizarre Adventure.
+This is an analysis and display exercise about Stand in JoJo's Bizarre Adventure.
 
 JJBA: https://en.wikipedia.org/wiki/JoJo%27s_Bizarre_Adventure
 
