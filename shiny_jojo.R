@@ -3,6 +3,8 @@
 library(ggplot2)
 library(ggradar)
 library(shiny)
+library(scales)
+library(dplyr)
 
 # add the group name for the stands
 raw_data <- read.csv("/Users/willowwu/Downloads/jojostandstatsv2.csv")
@@ -13,22 +15,25 @@ raw_data$group[93:156] <- "Stone Ocean"
 raw_data$group[117:156] <- "Steel Ball Run"
 raw_data$group[141:156] <- "JoJolion"
 
-# turn out the character variables into numeric
-data[,2:7] <- sapply(data[,2:7],as.factor)
-raw_data[raw_data == "None"] <- 0
-raw_data[raw_data == "E"] <- 1
-raw_data[raw_data == "D"] <- 2
-raw_data[raw_data == "C"] <- 3
-raw_data[raw_data == "B"] <- 4
-raw_data[raw_data == "A"] <- 5
-raw_data[raw_data == "Infi"] <- 6
 
-raw_data[,2:7] <- sapply(raw_data[,2:7],as.numeric)
+colnames(raw_data) <- c("スタンド","破壊力", "スピード",
+                        "射程距離","持続力","精密動作性","成長性","作品名")
+# turn out the character variables into numeric
+data_numeric <- raw_data
+data_numeric[data_numeric == "None"] <- 0
+data_numeric[data_numeric == "E"] <- 1
+data_numeric[data_numeric == "D"] <- 2
+data_numeric[data_numeric == "C"] <- 3
+data_numeric[data_numeric == "B"] <- 4
+data_numeric[data_numeric == "A"] <- 5
+data_numeric[data_numeric == "Infi"] <- 6
+
+data_numeric[,2:7] <- sapply(data_numeric[,2:7],as.numeric)
 
 # code to draw radar plot for certain Stand
-data_scale <- raw_data
+data_scale <- data_numeric
 data_scale[,2:7] <- data_scale[,2:7] %>% mutate_each(funs(rescale))
-data <- data_scale[1,1:7]
+# data <- data_scale[1,1:7]
 color_set <- list(c("#cc66ff", "#ffff80"), # 白金之星配色
               c("#a0e6ee","#ffb3bf"), # 疯狂钻石配色
               c("#fff266","#ebccff"), # 黄金体验配色
@@ -62,38 +67,26 @@ ggradar::ggradar(data[,1:7],
 
 
 # Define UI for app
-ui <- fluidPage(
-  
-  # App title ----
-  titlePanel("JO等了!!"),
-  
-  # Sidebar layout with input and output definitions
-  sidebarLayout(
-    
-    # Sidebar panel for inputs 
-    sidebarPanel(
-      
-      # Input
-      selectInput(inputId = "Standname",
-                  label = "choose a Stand name!",
-                  choices = unique(raw_data$Stand))
-      
-    ),
-    
-    # Main panel for displaying outputs ----
-    mainPanel(
-      # Output: Histogram ----
-      plotOutput(outputId = "radarplot"),
-      textOutput(outputId = "groupname")
-    )
-  )
-)
+ui <- navbarPage(titlePanel("Jo等了!!"),
+                 tabPanel("スタンド戦力レーダーチャート",
+                          selectInput(inputId = "Standname",
+                                      label = "スタンド名を決めてください!!",
+                                      choices = unique(data_numeric$スタンド)),
+                          fluidPage(tableOutput(outputId = "stand_length_table"),
+                            plotOutput(outputId = "radarplot",
+                                              width = 600,height = 00))),
+                 tabPanel("作品と対応するスタンド名",
+                          selectInput(inputId = "Groupname",
+                                      label = "作品名を決めてください!!",
+                                      choices = unique(data_numeric$作品名)),
+                          fluidPage(tableOutput(outputId = "stand_group_table"))))
+                 
 
 # Define server logic
 server <- function(input, output) {
   output$radarplot <- renderPlot({
     
-    data <- data_scale[data_scale$Stand == input$Standname,]
+    data <- data_scale[data_scale$スタンド == input$Standname,]
     
     color_set <- list(c("#dd99ff", "#ffff80"), # 白金之星配色
                       c("#a0e6ee","#ffb3bf"), # 疯狂钻石配色
@@ -103,7 +96,7 @@ server <- function(input, output) {
                       c("#FF1FC0","#ffffff") # 第八部配色
     )
     
-    group_stand <- data$group
+    group_stand <- data$作品名
     
     if(length(group_stand) > 1){
       group_stand <- group_stand[1]
@@ -139,8 +132,13 @@ server <- function(input, output) {
     
   })
   
-  output$groupname <- renderPrint(
-    paste("The Stand appears in ", as.character(data_scale[data_scale$Stand == input$Standname,8])),
-    width = 38)
+  output$stand_length_table <- renderTable(
+    raw_data[raw_data$スタンド == input$Standname,])
+  
+  output$stand_group_table <- renderTable(
+    raw_data[raw_data$作品名 == input$Groupname,]
+  )
 }
 shinyApp(ui, server)
+
+
