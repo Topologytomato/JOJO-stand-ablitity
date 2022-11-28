@@ -12,4 +12,5 @@ Detaild description of the dataset: https://www.kaggle.com/datasets/adityapoojar
 
 # Shiny page
 Creat a shiny page to display all stands and their ablities in JOJO 3-8.
+
 https://topologytomatoooo.shinyapps.io/shiny_study/
